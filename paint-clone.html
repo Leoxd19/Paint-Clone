@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Paint Clone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid #000;
+            background-color: #fff;
+        }
+        button {
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .color-picker-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 10px;
+        }
+        .color-picker-label {
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input[type="color"] {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+            background: none;
+        }
+        input[type="range"] {
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div class="color-picker-container">
+            <span class="color-picker-label">Click to change color</span>
+            <input type="color" id="colorPicker" value="#000000">
+        </div>
+        <input type="range" id="brushSize" min="1" max="50" value="5">
+        <span id="brushSizeDisplay">5px</span>
+        <button id="eraser">Eraser</button>
+        <button id="clear">Clear</button>
+        <button id="save">Save</button>
+    </div>
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const colorPicker = document.getElementById('colorPicker');
+        const brushSize = document.getElementById('brushSize');
+        const brushSizeDisplay = document.getElementById('brushSizeDisplay');
+        const eraserBtn = document.getElementById('eraser');
+        const clearBtn = document.getElementById('clear');
+        const saveBtn = document.getElementById('save');
+
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let isEraser = false;
+
+        function startDrawing(e) {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function updateBrushSize() {
+            ctx.lineWidth = brushSize.value;
+            brushSizeDisplay.textContent = `${brushSize.value}px`;
+        }
+
+        function setEraser() {
+            isEraser = !isEraser;
+            if (isEraser) {
+                ctx.strokeStyle = '#ffffff';
+                eraserBtn.textContent = 'Brush';
+            } else {
+                ctx.strokeStyle = colorPicker.value;
+                eraserBtn.textContent = 'Eraser';
+            }
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function saveCanvas() {
+            const image = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = 'paint-clone-drawing.png';
+            link.click();
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        colorPicker.addEventListener('input', () => {
+            if (!isEraser) {
+                ctx.strokeStyle = colorPicker.value;
+            }
+        });
+
+        brushSize.addEventListener('input', updateBrushSize);
+        eraserBtn.addEventListener('click', setEraser);
+        clearBtn.addEventListener('click', clearCanvas);
+        saveBtn.addEventListener('click', saveCanvas);
+
+        // Initialize
+        ctx.strokeStyle = colorPicker.value;
+        ctx.lineWidth = brushSize.value;
+        ctx.lineCap = 'round';
+    </script>
+</body>
+</html>
+
